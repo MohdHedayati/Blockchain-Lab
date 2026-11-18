@@ -78,6 +78,23 @@ Shows address creation, locking, a spend with both signatures, and failures (onl
 
 ---
 
+## VS Code snippets
+Every experiment is also saved as a VS Code snippet, so you can paste the full code anywhere by typing its prefix and pressing Tab/Enter. They live in your user snippets folder (`%APPDATA%\Code\User\snippets\`), not in this repo.
+
+| Type this | In a | Pastes |
+|---|---|---|
+| `exp1_finite_field` | `.py` file | Experiment 1 |
+| `exp2_openssl` | `.sh` file | Experiment 2 (in `shellscript.json`) |
+| `exp3_merkle_tree` | `.py` file | Experiment 3, Merkle tree |
+| `exp3_make_pdfs` | `.py` file | Experiment 3, creates the dummy PDFs |
+| `exp3_hash_chain` | `.py` file | Experiment 3, hash chain (run `exp3_make_pdfs` first) |
+| `exp4_bitcoin_keys` | `.py` file | Experiment 4 (self-contained) |
+| `exp5_proof_of_work` | `.py` file | Experiment 5 |
+| `exp6_p2pkh` | `.py` file | Experiment 6 (self-contained) |
+| `exp7_multisig` | `.py` file | Experiment 7 (self-contained) |
+
+Experiments 4, 6 and 7 include the code from `common/`, so they run without that folder. The snippets are copies: if you edit the code in the repo, the snippets do not update.
+
 ## Folder layout
 ```
 common/    btc.py (keys, ECDSA, Base58, addresses), script.py (Script interpreter)
