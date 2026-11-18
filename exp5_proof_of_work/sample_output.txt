@@ -1,0 +1,27 @@
+Proof of Work - difficulty = 5 leading zeros (target: 00000...)
+
+Block 0 (genesis) nonce=363626
+  hash: 000002d93ec1e49169cf83fc6d211ccb9999df893fcd84645f3dd17aeb31c29c
+
+Block 1  data: Record1 - Veermata Jijabai Technological Institute
+  prev : 000002d93ec1e49169cf83fc6d211ccb9999df893fcd84645f3dd17aeb31c29c
+  nonce: 178207   mined in 0.70s
+  hash : 000000250bf11b305e0418d84574d9a9f180abdc9734a83a6448c008140fd955
+
+Block 2  data: Record2 - Computer Engineering and Information Technology
+  prev : 000000250bf11b305e0418d84574d9a9f180abdc9734a83a6448c008140fd955
+  nonce: 191922   mined in 0.76s
+  hash : 0000037827b4c35189067c5ed20f289c065a2e300026b0cf2c8aa6bac44ffb3f
+
+Block 3  data: Record3 - Blockchain Technology
+  prev : 0000037827b4c35189067c5ed20f289c065a2e300026b0cf2c8aa6bac44ffb3f
+  nonce: 357403   mined in 1.46s
+  hash : 00000f301289efd717fef8945de13f8eba132623168d81c354c13a19c7606e31
+
+Block 4  data: Record4 - 241080023
+  prev : 00000f301289efd717fef8945de13f8eba132623168d81c354c13a19c7606e31
+  nonce: 1089729   mined in 5.42s
+  hash : 00000d1417aaabcfddd800b9a124b52569385f43857a6f020f3b538ed31d51a2
+
+Blockchain valid? True
+After tampering with Block 2 data, valid? False

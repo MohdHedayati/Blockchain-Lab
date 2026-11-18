@@ -1,0 +1,72 @@
++ openssl version
+OpenSSL 3.2.3 3 Sep 2024 (Library: OpenSSL 3.2.3 3 Sep 2024)
++ openssl rand -hex 16
++ openssl rand -hex 24
++ openssl rand -hex 32
++ cat key128.txt key192.txt key256.txt
+764f894a473b4a191afe1c1578d93237
+296fff4f35ab6beb30ca030afc399c4b031ec33184bf7feb
+1eaa88c107290872d2e20f312083dc53e6f04ca7c11940e5996b13ec916347fb
++ printf 'Name: Mohammed Mehdi Hedayati\nAddress: Veermata Jijabai Technological Institute, Matunga, Mumbai - 400019\n'
++ cat details.txt
+Name: Mohammed Mehdi Hedayati
+Address: Veermata Jijabai Technological Institute, Matunga, Mumbai - 400019
+++ cat key256.txt
++ KEY=1eaa88c107290872d2e20f312083dc53e6f04ca7c11940e5996b13ec916347fb
+++ openssl rand -hex 16
++ IV=52d627fc13a9b2a28b0823e64b85233b
++ openssl enc -aes-256-cbc -in details.txt -out details.enc -K 1eaa88c107290872d2e20f312083dc53e6f04ca7c11940e5996b13ec916347fb -iv 52d627fc13a9b2a28b0823e64b85233b
++ echo 'IV: 52d627fc13a9b2a28b0823e64b85233b'
+IV: 52d627fc13a9b2a28b0823e64b85233b
++ xxd details.enc
++ head
+00000000: 66e5 afbe f617 8a6d 8ed8 ab18 802d c5c6  f......m.....-..
+00000010: 158d f06e ece2 f0cb 31f6 e898 41c3 b65a  ...n....1...A..Z
+00000020: 4464 55a1 f6c7 1913 5f5e 5781 6ace a515  DdU....._^W.j...
+00000030: f24b 026f 5b05 877d 7309 fd1c 944f 0926  .K.o[..}s....O.&
+00000040: 24e5 cf8a 160b 39d9 2695 69b8 eb5a b31e  $.....9.&.i..Z..
+00000050: ae01 3ba5 1380 c601 1cd9 2cb5 cb21 e3b9  ..;.......,..!..
+00000060: 3a73 20ca eaa1 91a3 38f8 a108 2ece c7fb  :s .....8.......
++ openssl enc -d -aes-256-cbc -in details.enc -out details_decrypted.txt -K 1eaa88c107290872d2e20f312083dc53e6f04ca7c11940e5996b13ec916347fb -iv 52d627fc13a9b2a28b0823e64b85233b
++ cat details_decrypted.txt
+Name: Mohammed Mehdi Hedayati
+Address: Veermata Jijabai Technological Institute, Matunga, Mumbai - 400019
++ diff details.txt details_decrypted.txt
++ echo 'DECRYPTION SUCCESSFUL: files match'
+DECRYPTION SUCCESSFUL: files match
+++ cat key128.txt
++ openssl enc -aes-128-cbc -in details.txt -out d128.enc -K 764f894a473b4a191afe1c1578d93237 -iv 52d627fc13a9b2a28b0823e64b85233b
+++ cat key128.txt
++ openssl enc -d -aes-128-cbc -in d128.enc -K 764f894a473b4a191afe1c1578d93237 -iv 52d627fc13a9b2a28b0823e64b85233b
+Name: Mohammed Mehdi Hedayati
+Address: Veermata Jijabai Technological Institute, Matunga, Mumbai - 400019
+++ cat key192.txt
++ openssl enc -aes-192-cbc -in details.txt -out d192.enc -K 296fff4f35ab6beb30ca030afc399c4b031ec33184bf7feb -iv 52d627fc13a9b2a28b0823e64b85233b
+++ cat key192.txt
++ openssl enc -d -aes-192-cbc -in d192.enc -K 296fff4f35ab6beb30ca030afc399c4b031ec33184bf7feb -iv 52d627fc13a9b2a28b0823e64b85233b
+Name: Mohammed Mehdi Hedayati
+Address: Veermata Jijabai Technological Institute, Matunga, Mumbai - 400019
++ openssl genrsa -out rsa_private.pem 2048
++ openssl rsa -in rsa_private.pem -pubout -out rsa_public.pem
+writing RSA key
++ openssl rsa -in rsa_private.pem -noout -text
++ head -5
+Private-Key: (2048 bit, 2 primes)
+modulus:
+    00:e3:64:f6:e1:75:d5:86:df:bb:75:a2:72:65:cd:
+    c2:93:5f:80:df:b7:53:b3:db:d7:d1:5f:aa:25:50:
+    d7:1f:59:af:eb:47:f0:73:cc:20:d7:11:37:07:f5:
++ cat rsa_public.pem
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA42T24XXVht+7daJyZc3C
+k1+A37dTs9vX0V+qJVDXH1mv60fwc8wg1xE3B/VfFLut4NL8an1o88WN7pevwF3W
+TFrVNYA1UZmbWldbdG4mttsJ6PRkjwvljBTr4Wp3dDEWUpujYbHK5XoXscJnXKDV
+zOBAuVnkeETq7tO+z1g7Y9/6yQghpfuouoYc1BU0M60XXYTvn5+6iGZ98r6MFIdL
+ZrCvdWr+WPwyOvB/Z5wdVmcW3/1/r3OlxT5C2XhfH2+M+ZVw3SVpi8ya3FlEQvw4
+DgHlMCYQ7LhtsEKKDzUwHcifOW0fI509PVK2ed8ARQCTnRPfKTJb8JvgBRppJoHu
+fwIDAQAB
+-----END PUBLIC KEY-----
++ echo 'hello blockchain'
++ openssl pkeyutl -encrypt -pubin -inkey rsa_public.pem -in msg.txt -out msg.enc
++ openssl pkeyutl -decrypt -inkey rsa_private.pem -in msg.enc
+hello blockchain

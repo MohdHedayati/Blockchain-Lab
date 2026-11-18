@@ -1,0 +1,21 @@
+a = FieldElement_31(2) | b = FieldElement_31(15) | c = FieldElement_31(2)
+
+-- Equality --
+a == c : True
+a == b : False
+a != b : True
+a == FieldElement(2, 17) : False
+
+-- Arithmetic in F_31 --
+a + b = FieldElement_31(17)  (2 + 15 = 17)
+a - b = FieldElement_31(18)  (2 - 15 = -13 mod 31 = 18)
+a * b = FieldElement_31(30)  (2 * 15 = 30)
+24 + 19 = FieldElement_31(12)  (43 mod 31 = 12)
+24 * 19 = FieldElement_31(22)  (456 mod 31 = 22)
+
+-- Invalid element --
+FieldElement(31, 31) -> ValueError: Num 31 not in field range 0 to 30
+FieldElement(-1, 31) -> ValueError: Num -1 not in field range 0 to 30
+
+-- Different fields --
+TypeError: Cannot operate on two numbers in different Fields

@@ -1,0 +1,33 @@
+Alice pubkey: 033e540e7a5f74fb4674e180c27861559f192855755b590794dca90d9e68ed60f9
+Bob   pubkey: 02f977954ae58569d529f92adb68b35845320058a3fdc1bef18a968215623906b7
+
+REDEEM SCRIPT: OP_2 033e540e7a5f74fb4674e180c27861559f192855755b590794dca90d9e68ed60f9 02f977954ae58569d529f92adb68b35845320058a3fdc1bef18a968215623906b7 OP_2 OP_CHECKMULTISIG
+   raw hex    : 5221033e540e7a5f74fb4674e180c27861559f192855755b590794dca90d9e68ed60f92102f977954ae58569d529f92adb68b35845320058a3fdc1bef18a968215623906b752ae
+
+P2SH 2-of-2 multisig address: 3ExsPLijh6tt964e8SAnZvmr2RPM92yjBA (starts with 3)
+
+LOCKING SCRIPT (scriptPubKey): OP_HASH160 919929d6833e223f1d210a8e4d0060b0aa1208f5 OP_EQUAL
+
+UNLOCKING SCRIPT (scriptSig): OP_0 <sigAlice> <sigBob> <redeemScript>
+
+EXECUTION TRACE:
+    OP_0                                                     | stack before: []
+    3045022100ac5025e5811d7dd1560e42692f1e526d1b13ce0e74f9f2 | stack before: ['']
+    3044022000a386cb90d1c0c818af8002e3a88ef9ab0456052c49dce6 | stack before: ['', '3045022100ac..']
+    5221033e540e7a5f74fb4674e180c27861559f192855755b590794dc | stack before: ['', '3045022100ac..', '3044022000a3..']
+    OP_HASH160                                               | stack before: ['', '3045022100ac..', '3044022000a3..', '5221033e540e..']
+    919929d6833e223f1d210a8e4d0060b0aa1208f5                 | stack before: ['', '3045022100ac..', '3044022000a3..', '919929d6833e..']
+    OP_EQUAL                                                 | stack before: ['', '3045022100ac..', '3044022000a3..', '919929d6833e..', '919929d6833e..']
+  -- P2SH: hash matched, now executing redeem script: OP_2 033e540e7a5f74fb4674e180c27861559f192855755b590794dca90d9e68ed60f9 02f977954ae58569d529f92adb68b35845320058a3fdc1bef18a968215623906b7 OP_2 OP_CHECKMULTISIG
+    OP_2                                                     | stack before: ['', '3045022100ac..', '3044022000a3..']
+    033e540e7a5f74fb4674e180c27861559f192855755b590794dca90d | stack before: ['', '3045022100ac..', '3044022000a3..', '02']
+    02f977954ae58569d529f92adb68b35845320058a3fdc1bef18a9682 | stack before: ['', '3045022100ac..', '3044022000a3..', '02', '033e540e7a5f..']
+    OP_2                                                     | stack before: ['', '3045022100ac..', '3044022000a3..', '02', '033e540e7a5f..', '02f977954ae5..']
+    OP_CHECKMULTISIG                                         | stack before: ['', '3045022100ac..', '3044022000a3..', '02', '033e540e7a5f..', '02f977954ae5..', '02']
+
+Spend with both signatures -> True
+
+Only Alice signs (1 of 2)      -> False
+Alice + attacker's signature   -> False
+Signatures in wrong order      -> False
+Wrong redeem script            -> False

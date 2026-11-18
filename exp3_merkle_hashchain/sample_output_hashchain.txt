@@ -1,0 +1,20 @@
+Genesis hash: 0000000000000000000000000000000000000000000000000000000000000000
+
+Document : pdfs\semester1_gradecard.pdf
+  doc hash   : 88844ec79e39ad7efb9bad9f8e91526c16466ec74d9c4cf3ac8aef2d3dc1a9c1
+  chain hash : 63c44ed90d341f39d18785d52c3ecda936e6085694b583c5c172a460c50c52c8
+
+Document : pdfs\semester2_gradecard.pdf
+  doc hash   : 5c165fefc4e553c642316abbf9e02b4ed10af44a519d80a3c7e6201017d76998
+  chain hash : 602b37425be1fd7b38f911e8c3734ca469f7e12e958c1b80dfd2956b209c6237
+
+Document : pdfs\semester3_gradecard.pdf
+  doc hash   : e2344438310dc228b979cfbdf9b6a5827af8779ffd977ca2379d3802693cfc56
+  chain hash : 04b75d567cf502f9daacb657c1ce0e0a653d0f7b185069974893efc168eb9f00
+
+Document : pdfs\semester4_gradecard.pdf
+  doc hash   : ee6e581f5ce44def541bea410e5ddf8415632841c8e8abc5061df3773345346c
+  chain hash : d598c1323e45259a22050425d7188bc6d9a002efb151e6cb299fe85666b04501
+
+Final hash of all documents:
+d598c1323e45259a22050425d7188bc6d9a002efb151e6cb299fe85666b04501

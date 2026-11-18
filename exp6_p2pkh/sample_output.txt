@@ -1,0 +1,23 @@
+Recipient address : 1AprvL3gJMsA4Ed8JsvLizN3PYPRkL3FFK
+Public key hash   : 6bc65a58ff623fbe6152571e20b9aff6d8a8dfad
+
+LOCKING SCRIPT (scriptPubKey):
+   OP_DUP OP_HASH160 6bc65a58ff623fbe6152571e20b9aff6d8a8dfad OP_EQUALVERIFY OP_CHECKSIG
+   raw hex: 76a9146bc65a58ff623fbe6152571e20b9aff6d8a8dfad88ac (76a914<20-byte hash>88ac)
+
+UNLOCKING SCRIPT (scriptSig):  <signature> <public key>
+   sig: 30440220526e56f5bdb80c99f03d770d17c7dfc40c1593b956b6f4603094fb226eecbeb102203326129fc65bb8938e0d4fe7f40b9c7bb76366c1360fc7719758bfe8c141b58a
+   pub: 0359d005833da6f87e58147411fec472162729fba57d8a5684629813de0ff45766
+
+EXECUTION TRACE (scriptSig + scriptPubKey):
+    30440220526e56f5bdb80c99f03d770d17c7dfc40c1593b956b6f460 | stack before: []
+    0359d005833da6f87e58147411fec472162729fba57d8a5684629813 | stack before: ['30440220526e..']
+    OP_DUP                                                   | stack before: ['30440220526e..', '0359d005833d..']
+    OP_HASH160                                               | stack before: ['30440220526e..', '0359d005833d..', '0359d005833d..']
+    6bc65a58ff623fbe6152571e20b9aff6d8a8dfad                 | stack before: ['30440220526e..', '0359d005833d..', '6bc65a58ff62..']
+    OP_EQUALVERIFY                                           | stack before: ['30440220526e..', '0359d005833d..', '6bc65a58ff62..', '6bc65a58ff62..']
+    OP_CHECKSIG                                              | stack before: ['30440220526e..', '0359d005833d..']
+
+Valid spend by owner -> True
+Attacker with own key (wrong pubkey hash) -> False
+Attacker using Bob's pubkey but own signature -> False

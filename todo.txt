@@ -1,0 +1,96 @@
+Experiment 1
+Represent
+elements of a finite field  (F_p),
+where (p) is a prime number, using a Python class.
+
+
+1.
+Create a Python class named `FieldElement` to
+represent a finite field element. Store `num` and `prime` as attributes.
+
+
+2.
+Check that `num` lies between 0 and `prime - 1`, inclusive. If it does not,
+raise a `ValueError`.
+
+
+3.
+Implement the equality method to check whether two `FieldElement`
+objects are equal. Two objects are equal only if both their `num` and `prime`
+attributes match.
+
+
+4.
+Implement addition, subtraction and multiplication operations for `FieldElement`
+objects, ensuring that the results remain valid elements of the same finite
+field.
+
+
+5.
+Test the implementation with suitable inputs and demonstrate the arithmetic
+operations, equality checking and handling of an invalid element.
+
+
+Submission:
+Submit
+the Python code along with sample inputs and outputs.
+
+
+Experiment 2
+1. Install the OpenSSL tool.
+2. Generate symmetric keys of 128-bit,
+192-bit and 256-bit lengths.
+3. Encrypt a file containing your name
+and address using a generated key and save the resulting ciphertext to a file.
+4. Decrypt the ciphertext file using the
+generated key.
+5. Generate an RSA key pair.
+Submission: Submit the OpenSSL commands used along with sample outputs. Demonstrate successful key generation, encryption, decryption and RSA key pair generation.
+
+Experiment 3
+Consider an academic transaction,
+where a student receives grades for 5 subjects per semester.
+
+    Write a program to generate a Merkle
+Tree of 10 transactions. Display root
+node value as a digital fingerprint of the
+
+entire set of transactions
+
+
+
+2. Consider your grade cards of last four semesters as pdf file.
+
+    Write a program to generate a hash chain of your
+documents. Display hash value after inclusion of each document and the final
+hash of all documents.
+
+
+Experiment 4
+Write a program to facilitate
+following features:Generate a private key.Generate the public key.Generate the Bitcoin address.Apply Base58Check encoding.Generate the WIF of the private key.Generate compressed and uncompressed public keys, and their addresses.Generate a vanity address starting with .
+
+Experiment 5
+Design
+a proof of work consensus algorithm in python/java/javascript
+
+Take  following records
+
+Record1 - Veermata
+Jijabai Technological Institute
+
+Record2-  Computer Engineering and Information Technology
+
+Record3 - Blockchain Technology
+
+Record4 - Your registration ID
+
+Experiment 6
+Create
+a simple Bitcoin script that locks funds to a specific address using the
+Pay-to-Public-Key-Hash (P2PKH) script.
+
+Experiment 7
+Write
+scripts to create a 2-of-2 multisig
+address, lock funds to it, and then spend those funds.

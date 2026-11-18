@@ -1,0 +1,37 @@
+======================================================================
+1. PRIVATE KEY (random 256-bit integer in [1, n-1])
+   hex : 34d70a062005ea11505e4f27bcc0044e0bc2687d3b26d144d3a8c604719a28be
+
+2. PUBLIC KEY  (K = k * G on secp256k1)
+   x   : 0960f0c4f3db873d7b7dcd6fbfc47b9faafd9ce8dc59f88fc1d4e331a5f2768b
+   y   : 84a87b46ff8de47e76583c8c223d6fa1f8a28eec7ced5cfd530646c12892d26e
+   uncompressed (65 B, 04||x||y): 040960f0c4f3db873d7b7dcd6fbfc47b9faafd9ce8dc59f88fc1d4e331a5f2768b84a87b46ff8de47e76583c8c223d6fa1f8a28eec7ced5cfd530646c12892d26e
+   compressed   (33 B, 02/03||x): 020960f0c4f3db873d7b7dcd6fbfc47b9faafd9ce8dc59f88fc1d4e331a5f2768b
+
+3. BITCOIN ADDRESS  (Base58Check(0x00 || RIPEMD160(SHA256(pubkey))))
+   [uncompressed]
+     hash160 : 6794d1de9e822a35d0f0db5fbe204fdeb43327ff
+     payload : 006794d1de9e822a35d0f0db5fbe204fdeb43327ff
+     checksum: 45487924 (first 4 bytes of double SHA256)
+     address : 1ASgswWFuYZhcu9c6M2ynoHbb2gfEkg6xK
+   [compressed]
+     hash160 : 6f3a34d220327fbdd3b164b10516493604532925
+     payload : 006f3a34d220327fbdd3b164b10516493604532925
+     checksum: 514f7774 (first 4 bytes of double SHA256)
+     address : 1B97jYKUGKgRkCdkCXZbWbtqa5w7uEpS4T
+
+4. BASE58CHECK ENCODING demo
+   encode: 1B97jYKUGKgRkCdkCXZbWbtqa5w7uEpS4T
+   decode back ok: True
+
+5. WIF (Wallet Import Format)
+   uncompressed WIF (starts with 5): 5JDZJqPuSBfVjVxFGmWzFbHnf6ZfUMc8XwTya3t7syXuoXprnkZ
+   compressed   WIF (starts K or L): KxzRbic6SA4upanqzbVMhQM6X9ZAojx4FZQ4gsidMzXS4MGcRhSd
+   round-trip check (decode WIF): True
+
+6. VANITY ADDRESS
+   searching for address starting with '1Ka' ...
+   found after 1281 tries in 13.0s
+   address     : 1Kasr4uJXrNBer7zYohF1hbgQjoyPwHrv1
+   private key : 9c7e1395a5739dc3efa68a4de96665a9927541ba088fe3ba562ff7dce29fcab2
+   WIF         : L2TuqdguFvYSDErmqBvTJ4XJ4vfoFJXCA2PvEpKLHCdn5b4CL5Wb
