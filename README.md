@@ -95,6 +95,23 @@ Every experiment is also saved as a VS Code snippet, so you can paste the full c
 
 Experiments 4, 6 and 7 include the code from `common/`, so they run without that folder. The snippets are copies: if you edit the code in the repo, the snippets do not update.
 
+## Espanso triggers (work in any app)
+The same experiments are also available system-wide through [espanso](https://espanso.org). Type a trigger anywhere (editor, browser, notepad) and the full code is pasted. They live in `%APPDATA%\espanso\match\blockchain_lab.yml`, not in this repo.
+
+| Trigger | Short | Pastes |
+|---|---|---|
+| `:exp1_finite_field` | `:bc1` | Experiment 1 |
+| `:exp2_openssl` | `:bc2` | Experiment 2 (shell commands) |
+| `:exp3_merkle_tree` | `:bc3a` | Experiment 3, Merkle tree |
+| `:exp3_make_pdfs` | `:bc3b` | Experiment 3, dummy PDF generator |
+| `:exp3_hash_chain` | `:bc3c` | Experiment 3, hash chain |
+| `:exp4_bitcoin_keys` | `:bc4` | Experiment 4 (self-contained) |
+| `:exp5_proof_of_work` | `:bc5` | Experiment 5 |
+| `:exp6_p2pkh` | `:bc6` | Experiment 6 (self-contained) |
+| `:exp7_multisig` | `:bc7` | Experiment 7 (self-contained) |
+
+Like the VS Code snippets, these are copies and do not update when the repo code changes.
+
 ## Folder layout
 ```
 common/    btc.py (keys, ECDSA, Base58, addresses), script.py (Script interpreter)
