@@ -360,3 +360,162 @@ So the spender proves two things: they know the public key behind the address, a
 66. **What is the difference between 2-of-2 and 1-of-2?** 2-of-2 needs both parties (no one can spend alone, and losing a key loses the funds); 1-of-2 lets either party spend.
 67. **What is the advantage of 2-of-3?** Redundancy: any two of three keys can spend, so one lost key doesn't lock the funds.
 68. **What are the limits of this lab's multisig?** It's a simulation: simplified sighash, no real transaction or network; the opcodes and address format are real.
+
+---
+---
+
+# Theoretical background (concepts behind each experiment)
+
+## Theory for Experiment 1 - Finite fields and why blockchains use them
+
+- **Group, ring, field.** A *group* is a set with one operation that is closed, associative, has an identity and inverses. A *ring* has two operations (+ and *) where + forms a commutative group and * is closed and distributes over +. A *field* is a ring where every non-zero element also has a multiplicative inverse, so you can add, subtract, multiply and divide (except by 0). Rational numbers and real numbers are fields; integers are not (no inverse for 2).
+- **Finite field F_p (also written GF(p) or Z_p).** The integers modulo a prime p form a field with exactly p elements. A finite field of size q exists only when q is a prime power (p^k); the size is called the **order**. This lab uses prime fields.
+- **Modular arithmetic.** `a ≡ b (mod p)` means p divides a - b. Addition, subtraction and multiplication can be reduced mod p at any step.
+- **Why prime?** In Z_n with composite n (say n = 6), `2 * 3 = 0`, so zero divisors exist and 2 has no inverse. With prime p, `gcd(a, p) = 1` for every non-zero a, so an inverse always exists (extended Euclid).
+- **Fermat's little theorem.** If p is prime and a is not divisible by p, then `a^(p-1) ≡ 1 (mod p)`. Hence the inverse is `a^(p-2) mod p`, and division is `a / b = a * b^(p-2)`. The multiplicative group of non-zero elements is cyclic, so a generator exists.
+- **Why cryptography wants finite fields.** Arithmetic on a finite set is exact (no rounding), numbers never grow beyond log2(p) bits, and operations are easily reversible *only* with extra knowledge (discrete logarithm problem). Elliptic curves defined over F_p turn into a finite group where hard problems exist.
+- **Where used:** elliptic-curve cryptography (Bitcoin, Ethereum), Diffie-Hellman, zero-knowledge proofs (zk-SNARKs work over large prime fields), Reed-Solomon codes and AES (which uses GF(2^8)).
+
+## Theory for Experiment 2 - Cryptography basics
+
+- **Goals of cryptography:** confidentiality (only intended people read), integrity (not altered), authentication (who sent it) and non-repudiation (sender can't deny). Encryption gives confidentiality; hashes and MACs give integrity; signatures give authentication and non-repudiation.
+- **Kerckhoffs's principle.** A system must stay secure even if everything except the key is public. This is why we use public algorithms (AES, RSA) and protect only keys.
+- **Block ciphers and AES.** AES (Rijndael, standard since 2001) encrypts 128-bit blocks with 128/192/256-bit keys using 10/12/14 rounds. Each round does SubBytes (non-linear S-box substitution), ShiftRows, MixColumns (diffusion) and AddRoundKey (XOR with a round key from the key schedule). Confusion + diffusion make output look random.
+- **Modes of operation.** A block cipher only handles one block; a mode handles long data. **ECB** encrypts blocks independently (identical blocks give identical ciphertext, so patterns leak - never use). **CBC** chains blocks with an IV. **CTR** turns the cipher into a stream cipher. **GCM** is CTR plus authentication (an *AEAD* mode) and is the modern default.
+- **Key size and brute force.** 2^128 operations is beyond any known computing; the best known attacks on full AES barely reduce this. Larger key = more work and slightly slower. Quantum computers (Grover) roughly halve the effective bits, so 256-bit AES stays comfortable.
+- **Why random keys matter.** Security reduces to key secrecy and unpredictability; keys must come from a CSPRNG (like `openssl rand`).
+- **Public-key cryptography.** Based on **trapdoor one-way functions**: easy forwards, hard backwards unless you know a secret.
+- **RSA mathematics.** Choose two large primes p, q; n = p*q; φ(n) = (p-1)(q-1); pick e coprime to φ(n) (commonly 65537); compute d = e^-1 mod φ(n). Public key = (n, e), private key = d. Encrypt `c = m^e mod n`; decrypt `m = c^d mod n` (correct by Euler's theorem). Security rests on the difficulty of **factoring n**. 2048-bit RSA is today's minimum; padding (OAEP for encryption, PSS for signatures) is essential since "textbook RSA" is insecure.
+- **Key exchange and hybrid encryption.** Public-key methods (RSA, Diffie-Hellman) are slow, so protocols such as TLS use them only to agree on a session key and then switch to AES.
+- **Key management problem.** Symmetric cryptography needs a safe channel to share keys (n people need n(n-1)/2 keys); public-key cryptography solves distribution but needs a way to trust public keys (certificates / PKI). Blockchains avoid PKI because a public key (or its hash) *is* the identity.
+- **PEM format.** Base64-encoded DER data between `-----BEGIN ...-----` and `-----END ...-----` lines.
+- **OpenSSL.** An open-source toolkit and library (used by TLS/HTTPS) that implements these algorithms from the command line.
+
+## Theory for Experiment 3 - Hashing, Merkle trees, tamper evidence
+
+- **Cryptographic hash function** `H: {0,1}* -> {0,1}^n`. Required properties:
+  - *Pre-image resistance* (one-way): given h, can't find m with H(m) = h (about 2^n work).
+  - *Second pre-image resistance*: given m1, can't find m2 ≠ m1 with the same hash.
+  - *Collision resistance*: can't find any two inputs with the same hash (about 2^(n/2) work because of the **birthday paradox**; for SHA-256 that is 2^128).
+  - *Determinism, speed, avalanche effect* (flipping one input bit flips about half the output bits).
+- **SHA-256** belongs to the SHA-2 family (NSA design, NIST standard), uses the Merkle-Damgard construction with a 512-bit block size and 64 rounds, and outputs 256 bits. MD5 and SHA-1 are broken for collisions. Bitcoin uses SHA-256 (often applied twice, "double SHA-256", to avoid length-extension attacks).
+- **Hash vs encryption.** A hash is keyless and irreversible; encryption is reversible with a key. A hash is *not* encryption and can't be "decrypted".
+- **Data integrity & digital fingerprints.** Comparing hashes verifies that a file is unchanged (e.g. download checksums). A hash alone doesn't prove *who* produced it; for that you sign it, or use a keyed MAC.
+- **Merkle tree (hash tree), Ralph Merkle 1979.** Leaves = hashes of data blocks; internal nodes = hash of children's concatenation. Properties: root commits to all data; inclusion proof size O(log n); verifying needs no other leaves; detects exactly which part changed by comparing subtrees. Used in Bitcoin (transaction root), Ethereum (state trees, Merkle-Patricia), Git, IPFS, Certificate Transparency and databases such as Cassandra and DynamoDB (anti-entropy).
+- **SPV (Simplified Payment Verification).** Light wallets download only block headers (80 bytes each) and ask a full node for the Merkle path of their transaction, then check it matches the root in the header.
+- **Hash chain.** A sequence where each element hashes the previous. Applications: blockchain linking (`prev_hash`), password/OTP schemes (S/KEY, Lamport), audit logs, timestamping. It makes records append-only and tamper-evident because any change forces recomputation of all later hashes - and in a distributed network others hold the original hashes.
+- **Immutability is tamper-*evidence*.** A blockchain doesn't physically stop edits; it makes them detectable and (with consensus) practically rejected.
+- **Why academic records on a blockchain?** Certificates/grades are verified by anyone against a published root without contacting the university, and cannot be forged retrospectively. Only the hash is stored on-chain, so private data stays private.
+
+## Theory for Experiment 4 - Public-key cryptography in Bitcoin
+
+- **Digital signatures.** Sign with the private key, verify with the public key. Provide authentication, integrity and non-repudiation. In Bitcoin a signature *is* the authorisation to spend; there are no passwords or accounts.
+- **Elliptic curves.** An elliptic curve over a prime field is the set of points (x, y) satisfying y^2 = x^3 + ax + b (mod p), plus a point at infinity O (the identity). Bitcoin's secp256k1 has a = 0, b = 7. Points form an abelian group under the **chord-and-tangent** rule: draw a line through P and Q, find the third intersection and reflect it over the x-axis to get P + Q; for P = Q use the tangent.
+- **Scalar multiplication and the ECDLP.** `kP = P + P + ... + P`. Given P and Q = kP, finding k is the **Elliptic Curve Discrete Logarithm Problem**; the best generic attacks need about sqrt(n) steps, so a 256-bit curve gives about 128 bits of security. A 256-bit ECC key is comparable to a 3072-bit RSA key but much smaller and faster.
+- **secp256k1 domain parameters.** Prime p = 2^256 - 2^32 - 977, curve y^2 = x^3 + 7, base point G, group order n (about 2^256), cofactor 1. "sec" = Standards for Efficient Cryptography, "p" = prime field, "256" = bits, "k" = Koblitz curve, "1" = first variant.
+- **Why key space is safe.** There are about 2^256 ≈ 10^77 private keys; guessing one is as hopeless as guessing a particular atom among all atoms in the visible universe is for a human. The real risk is *bad randomness*, not brute force.
+- **Quantum threat.** Shor's algorithm would solve ECDLP in polynomial time on a large quantum computer. Because addresses are hashes of public keys, unspent coins in never-reused addresses are partly protected until spending; post-quantum signatures are being researched.
+- **Address generation theory.** Hashing the public key gives (a) a shorter identifier (20 bytes vs 33/65), (b) hides the public key until spend, (c) two-layer hash protection. The four-byte double-SHA256 checksum catches random errors with probability 1 - 2^-32.
+- **Encoding.** *Hexadecimal* (base 16) for raw bytes, *Base58* for human-friendly strings. Base58Check = payload + checksum, then Base58. Newer SegWit addresses use *Bech32* (`bc1...`), which is case-insensitive and has stronger error detection.
+- **Wallets.** A wallet is a keystore, not a coin store. *Non-deterministic wallets* hold independent random keys; *HD wallets* (BIP-32/39/44) derive all keys from one seed phrase (12/24 words), so one backup covers everything. Losing the private key means losing the coins permanently; there is no recovery.
+- **Network prefixes.** Version bytes distinguish networks and types: `0x00` mainnet P2PKH (`1...`), `0x05` mainnet P2SH (`3...`), `0x6F` testnet P2PKH (`m`/`n`), `0x80` mainnet WIF.
+- **Address types:** P2PKH (`1...`, legacy), P2SH (`3...`), P2WPKH (`bc1q...`, SegWit), P2TR (`bc1p...`, Taproot).
+- **Vanity addresses and proof of work.** Both are brute-force searches whose cost grows exponentially with the number of constrained characters/bits; the difference is that mining's goal is set by the network.
+
+## Theory for Experiment 5 - Consensus and Proof of Work
+
+- **The double-spend problem.** Digital data can be copied, so how do you stop someone spending the same coin twice without a trusted bank? Bitcoin solves it with a public ledger everyone agrees on, which requires **consensus** among untrusting nodes.
+- **Byzantine Generals Problem.** Distributed nodes must agree even when some are faulty or malicious. Classic BFT algorithms (PBFT) tolerate up to f faulty nodes out of 3f + 1 but need a known, small set of participants. Nakamoto consensus works in an open network by using computational work as the "vote", making identity (Sybil attacks) irrelevant: it's one-CPU-one-vote, not one-IP-one-vote.
+- **Proof of Work (Hashcash, Adam Back 1997).** Originally an anti-spam idea. The miner finds a nonce so that `H(header) < target`. Properties: *hard to compute* (probabilistic, memoryless, so it is like a lottery weighted by hash power), *cheap to verify*, *progress-free*.
+- **Block header (Bitcoin, 80 bytes):** version, previous block hash, Merkle root, timestamp, difficulty target (`nBits`), nonce. Miners hash the header twice with SHA-256. The nonce is only 32 bits, so miners also change the *extra nonce* in the coinbase transaction to get new Merkle roots.
+- **Difficulty target.** The hash is interpreted as a 256-bit number and must be below the target. Lower target = harder. Expected attempts ≈ 2^256 / target. Retargeting every 2016 blocks (about two weeks) multiplies difficulty by (actual time / 20160 minutes), clamped to a factor of 4.
+- **Incentives.** The miner of a valid block earns the **block subsidy** (50 BTC at launch, halving every 210,000 blocks, about four years) plus transaction fees. The first transaction in each block is the **coinbase** transaction creating the reward. Total supply is capped near 21 million BTC.
+- **Longest-chain (most-work) rule and forks.** Nodes always extend the valid chain with the most cumulative work. Temporary forks (two blocks found at once) resolve when one branch becomes longer; the losing blocks become *orphaned/stale*. A transaction becomes safer with each **confirmation** (block on top); six confirmations is the convention.
+- **51% attack.** If one entity controls over half the hash power it can reorganise recent history (double-spend its own transactions, censor others), but cannot steal other people's coins, forge signatures or change consensus rules.
+- **Security vs cost.** Rewriting a block means redoing its work and all following blocks' work, so the cost grows linearly with depth; this is why PoW gives *probabilistic finality*.
+- **Costs of PoW.** High electricity consumption, specialised hardware (ASICs) and mining pool centralisation.
+- **Alternatives.**
+  - *Proof of Stake* (Ethereum since 2022): validators lock coins as collateral and are chosen in proportion to stake; misbehaviour is punished by slashing; no energy-heavy mining.
+  - *Delegated PoS*, *Proof of Authority* (known validators), *PBFT/Tendermint* (voting rounds, instant finality, small validator sets), *Proof of Elapsed Time*, *Proof of Space*.
+  - Trade-offs follow the **CAP theorem / blockchain trilemma**: decentralisation, security and scalability are hard to maximise together.
+- **Types of blockchains.** *Public permissionless* (Bitcoin, Ethereum), *public permissioned*, *private/consortium* (Hyperledger Fabric) which often use faster non-PoW consensus because participants are known.
+- **Smart contracts (context).** Ethereum extended the idea so the chain stores and executes programs; Bitcoin Script is deliberately limited.
+
+## Theory for Experiment 6 - Bitcoin transactions and Script
+
+- **Transaction model.** A transaction consumes previous outputs (**inputs**) and creates new **outputs**. Each input points at a previous transaction ID and output index and supplies an unlocking script. Each output has an amount (satoshis; 1 BTC = 10^8 sat) and a locking script. The sum of inputs minus outputs is the **fee** for miners. Outputs are spent whole, so "change" goes back to the sender in an extra output.
+- **UTXO set vs account model.** Bitcoin keeps the set of all unspent outputs; a "balance" is the sum of UTXOs you can unlock. Ethereum uses accounts with balances and nonces. UTXOs make parallel validation and privacy easier; accounts are simpler for contracts.
+- **Script language.** Stack-based (Forth-like), reverse Polish notation, executed left to right, *not Turing-complete* (no loops), deterministic and limited in size and operations, so every node can validate it quickly and safely.
+- **Standard script types:** P2PK (pay to public key), **P2PKH**, P2SH, multisig, P2WPKH/P2WSH (SegWit), P2TR (Taproot), and `OP_RETURN` (unspendable data carrier, used for timestamping/embedding hashes).
+- **Why hash the public key (P2PKH vs P2PK).** Shorter, adds a hash layer (including a modest quantum-resistance bonus before first spend), and gives the familiar address format.
+- **Signature hash types.** The signed message is a hash of a *modified copy* of the transaction. `SIGHASH_ALL` (default) commits to all inputs and outputs; `NONE` and `SINGLE` commit to fewer outputs; `ANYONECANPAY` lets others add inputs (crowdfunding-style transactions).
+- **Transaction IDs and malleability.** The txid is a double SHA-256 of the serialised transaction. Before SegWit, third parties could alter the signature encoding and change the txid without invalidating it; SegWit moved signatures to a separate witness structure to fix this.
+- **ECDSA vs Schnorr.** ECDSA (used here) needs a modular inversion and is not linear; Schnorr signatures (added with Taproot, 2021) are simpler, allow key/signature aggregation and provable security.
+- **Validation by nodes.** A node checks: format; inputs exist and are unspent (no double spend); scripts evaluate to TRUE; amounts valid (inputs >= outputs); size and standardness rules. Valid transactions wait in the **mempool** until a miner includes them in a block.
+- **Mining a transaction in practice:** broadcast -> relay by peer-to-peer gossip -> mempool -> included in a block -> confirmations.
+- **Testnet and regtest.** Test networks with worthless coins (testnet) and a private local chain (regtest) let developers experiment safely. This lab simulates the script logic locally instead.
+
+## Theory for Experiment 7 - Multisignature and P2SH
+
+- **Multi-party authorisation.** An m-of-n scheme splits control among n keys with threshold m. It improves security (an attacker must compromise m keys) and resilience (any m keys suffice). The trade-off is between availability (lower m, higher n) and security (higher m).
+- **Common patterns.**
+  - *1-of-2*: shared account where either person can spend.
+  - *2-of-2*: both must approve (joint account, payment channels, e.g. Lightning funding output).
+  - *2-of-3*: escrow (buyer, seller, arbiter) or personal backup (phone, laptop, hardware wallet / recovery key).
+  - *3-of-5*: organisational treasuries or exchanges.
+- **Bare multisig limits:** scripts of up to 15 public keys (so addresses get very long), the large script sits in the sender's output, and the output is expensive to relay.
+- **P2SH (BIP-16, 2012).** The output commits only to `HASH160(redeemScript)`. The redeem script is disclosed in the spending input, and nodes enforce it by executing it. Benefits: short `3...` addresses, sender need not know the details, the spender pays for complexity, and it supports arbitrary scripts (not just multisig). The special-case rule in the interpreter ("if the script is `HASH160 <h> EQUAL`, execute the redeem script") is how the soft fork was introduced without breaking old nodes.
+- **P2WSH / SegWit multisig.** Newer, cheaper and malleability-resistant forms of the same idea, using Bech32 `bc1q...` addresses.
+- **Threshold signatures / MuSig (Schnorr).** Instead of publishing several signatures, the parties combine keys into one aggregate public key and produce one signature that looks like a normal single-key spend: cheaper and more private. This is not what the lab does, but it is where multisig is heading with Taproot.
+- **Security considerations.** Keys should be stored on separate devices/locations; the redeem script must be backed up (without it you can't spend even if you have the keys); keys should be generated independently; verify the address on all devices before funding.
+- **Real-world usage.** Hardware-wallet setups, exchange cold storage, escrow services, and the 2-of-2 funding transaction of Lightning payment channels.
+
+---
+
+# More viva questions (theory)
+
+## Mathematics and cryptography fundamentals
+69. **What is a group? What is a field?** A group has one operation with closure, associativity, identity and inverses. A field has two operations (+, *) where every non-zero element has a multiplicative inverse.
+70. **State Fermat's little theorem and one use.** `a^(p-1) ≡ 1 (mod p)` for prime p and p not dividing a; used to compute inverses as `a^(p-2)` and in primality tests.
+71. **What is the order of a field/group?** The number of elements; F_p has order p, and the Bitcoin curve group has order n (about 2^256).
+72. **Difference between encoding, encryption and hashing?** Encoding (Base58, hex) is reversible and for representation only; encryption is reversible with a key and hides data; hashing is one-way and creates a fingerprint.
+73. **What is the avalanche effect?** A tiny change to the input changes about half of the output bits unpredictably.
+74. **What is the birthday paradox and why does it matter for hashes?** Collisions appear after about 2^(n/2) tries, not 2^n, so an n-bit hash gives only n/2 bits of collision resistance.
+75. **Why is SHA-256 applied twice in Bitcoin?** To protect against length-extension attacks and as a defensive design choice.
+76. **What are MD5 and SHA-1 and why are they avoided?** Older hash functions with practical collision attacks.
+77. **What is a MAC / HMAC?** A keyed hash that gives integrity and authenticity (needs a shared secret); we used HMAC to derive the deterministic nonce in ECDSA.
+78. **What is a digital signature and how is it different from a MAC?** A signature uses a private key and is verifiable by anyone with the public key (gives non-repudiation); a MAC needs the same secret on both sides.
+79. **What is the security basis of RSA vs ECC?** RSA: integer factorisation. ECC: elliptic curve discrete logarithm.
+80. **Why is a 256-bit ECC key comparable to a 3072-bit RSA key?** Best known attacks on ECC are fully exponential (about sqrt(n)), while factoring has sub-exponential algorithms, so RSA needs much bigger keys.
+81. **What is a trapdoor function?** Easy to compute forwards but hard to invert unless you know secret information.
+82. **What is Kerckhoffs's principle?** Security should depend only on the secrecy of the key, not the algorithm.
+83. **ECB vs CBC vs GCM?** ECB leaks patterns, CBC chains with an IV, GCM gives encryption plus authentication.
+84. **What is Diffie-Hellman key exchange?** Two parties derive a shared secret over a public channel using discrete-log hardness (ECDH on elliptic curves).
+85. **What is PKI and why does blockchain not need it?** PKI uses certificate authorities to bind identities to public keys; blockchains use the public key (or its hash) as the identity itself.
+86. **What is a CSPRNG?** A cryptographically secure pseudo-random generator, whose output is unpredictable even to someone who has seen earlier output.
+
+## Blockchain concepts
+87. **What are the main features of a blockchain?** Decentralisation, immutability (tamper evidence), transparency, consensus-based validation, cryptographic security and traceability.
+88. **What is a block made of?** A header (previous hash, Merkle root, timestamp, difficulty, nonce, version) and a list of transactions.
+89. **What is a distributed ledger?** A database replicated across many nodes with no central owner, kept consistent by a consensus protocol.
+90. **What is a node? Full node vs light node?** A participant running the software. A full node stores and validates the entire chain; a light (SPV) node keeps only headers and relies on Merkle proofs.
+91. **What is the double-spend problem and how is it solved?** Spending the same coin twice; solved by an agreed ordering of transactions in the blockchain and by rejecting any transaction that spends an already spent output.
+92. **Permissioned vs permissionless blockchains?** Permissionless: anyone can join (Bitcoin). Permissioned: known participants with access control (Hyperledger Fabric).
+93. **What is the Byzantine Generals Problem?** Reaching agreement among distributed parties when some may be traitors/faulty; PoW gives a probabilistic solution for open networks.
+94. **What is a Sybil attack and how does PoW resist it?** Creating many fake identities to gain influence; PoW weights influence by computing power, not identity count.
+95. **What are confirmations?** The number of blocks built on top of a transaction's block; more confirmations means exponentially lower chance of reversal.
+96. **What is the block reward and halving?** New coins given to the miner of a block, halved every 210,000 blocks (about four years), capping supply at about 21 million.
+97. **What is a coinbase transaction?** The first transaction in a block that creates the reward and has no real inputs.
+98. **What is a mempool?** The pool of valid, unconfirmed transactions waiting at a node to be mined.
+99. **What is a fork? Soft fork vs hard fork?** A divergence in the chain. A soft fork tightens the rules (backward compatible, e.g. P2SH, SegWit); a hard fork loosens or changes them so non-upgraded nodes reject the new blocks (e.g. Bitcoin Cash).
+100. **What is the blockchain trilemma?** The difficulty of achieving decentralisation, security and scalability at the same time.
+101. **Proof of Work vs Proof of Stake?** PoW: security from energy and hardware spent; PoS: security from locked capital that can be slashed; PoS uses far less energy.
+102. **Why is Bitcoin Script not Turing complete?** To guarantee termination and limit attack surface (no infinite loops), which keeps validation cheap for every node.
+103. **What is SegWit?** Segregated Witness (2017) moves signature data out of the transaction body, fixes malleability, effectively raises capacity and enables Lightning.
+104. **What is Taproot?** A 2021 upgrade adding Schnorr signatures and MAST so complex spending conditions (including multisig) look like ordinary single-key spends.
+105. **What is the Lightning Network?** A layer-2 network of payment channels, opened with a 2-of-2 multisig output, enabling fast, cheap off-chain payments settled on Bitcoin.
+106. **What is a smart contract?** Code stored and executed on a blockchain (e.g. Ethereum); Bitcoin Script supports limited contract-like conditions such as multisig and timelocks.
+107. **What are timelocks (`OP_CHECKLOCKTIMEVERIFY`)?** Script conditions that prevent spending until a certain time or block height.
+108. **Real-life applications of blockchain?** Cryptocurrencies, supply-chain tracking, academic credential verification, healthcare records, digital identity, voting, land registries, and notarisation/timestamping.
+109. **Limitations of blockchain?** Throughput and latency limits, storage growth, energy use for PoW, immutability making errors hard to correct, regulatory and privacy issues (pseudonymous, not anonymous).
+110. **Why is Bitcoin pseudonymous and not anonymous?** Addresses are not tied to names, but every transaction is public and can often be linked to people by analysis.
